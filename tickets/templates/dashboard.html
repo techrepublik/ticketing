@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2>Dashboard</h2>
+<div class="row">
+    <div class="col-md-4">
+        <div class="card text-white bg-primary mb-3">
+            <div class="card-header">Open Tickets</div>
+            <div class="card-body">
+                <h5 class="card-title">{{ ticket_counts.open }}</h5>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-white bg-warning mb-3">
+            <div class="card-header">In Progress</div>
+            <div class="card-body">
+                <h5 class="card-title">{{ ticket_counts.in_progress }}</h5>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card text-white bg-success mb-3">
+            <div class="card-header">Closed Tickets</div>
+            <div class="card-body">
+                <h5 class="card-title">{{ ticket_counts.closed }}</h5>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h3>Your Tickets</h3>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Status</th>
+            <th>Category</th>
+            <th>Created At</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for ticket in tickets %}
+        <tr>
+            <td>{{ ticket.title }}</td>
+            <td>{{ ticket.get_status_display }}</td>
+            <td>{% if ticket.category %}
+                    {{ ticket.category.name }}
+                {% else %}
+                    N/A
+                {% endif %}
+            </td>
+            <td>{{ ticket.created_at|date:"Y-m-d H:i" }}</td>
+            <td>
+                <a href="{% url 'ticket-update' ticket.pk %}" class="btn btn-sm btn-warning">Edit</a>
+                <a href="{% url 'ticket-delete' ticket.pk %}" class="btn btn-sm btn-danger">Delete</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="5">No tickets found.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

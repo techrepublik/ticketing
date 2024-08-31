@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<h2>Categories</h2>
+
+<!-- Button to Open Create Category Modal -->
+<button type="button" class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#createCategoryModal">
+    Create Category
+</button>
+
+<!-- Categories Table -->
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for category in categories %}
+        <tr>
+            <td>{{ category.name }}</td>
+            <td>{{ category.description }}</td>
+            <td>
+                <button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal" 
+                        data-bs-target="#updateCategoryModal{{ category.pk }}">
+                    Edit
+                </button>
+                <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" 
+                        data-bs-target="#deleteCategoryModal{{ category.pk }}">
+                    Delete
+                </button>
+            </td>
+        </tr>
+
+        <!-- Update Category Modal -->
+        <div class="modal fade" id="updateCategoryModal{{ category.pk }}" tabindex="-1" aria-labelledby="updateCategoryModalLabel{{ category.pk }}" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form method="post" action="{% url 'category-update' category.pk %}">
+                        {% csrf_token %}
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="updateCategoryModalLabel{{ category.pk }}">Edit Category</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <!-- Render form fields manually -->
+                            <div class="mb-3">
+                                <label for="id_name_{{ category.pk }}" class="form-label">Name</label>
+                                <input type="text" class="form-control" id="id_name_{{ category.pk }}" name="name" value="{{ category.name }}" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="id_description_{{ category.pk }}" class="form-label">Description</label>
+                                <textarea class="form-control" id="id_description_{{ category.pk }}" name="description" rows="3">{{ category.description }}</textarea>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-warning">Update Category</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delete Category Modal -->
+        <div class="modal fade" id="deleteCategoryModal{{ category.pk }}" tabindex="-1" aria-labelledby="deleteCategoryModalLabel{{ category.pk }}" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form method="post" action="{% url 'category-delete' category.pk %}">
+                        {% csrf_token %}
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="deleteCategoryModalLabel{{ category.pk }}">Delete Category</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            Are you sure you want to delete the category "{{ category.name }}"?
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- Create Category Modal -->
+<div class="modal fade" id="createCategoryModal" tabindex="-1" aria-labelledby="createCategoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="{% url 'category-create' %}">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createCategoryModalLabel">Create Category</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    {{form|crispy}}
+                    <!-- Alternatively, manually render fields -->
+                    <div class="mb-3">
+                        <label for="id_name" class="form-label">Name</label>
+                        <input type="text" class="form-control" id="id_name" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="id_description" class="form-label">Description</label>
+                        <textarea class="form-control" id="id_description" name="description" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Category</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

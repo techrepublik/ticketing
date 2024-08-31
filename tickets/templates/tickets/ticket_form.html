@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<h2>{% if ticket %}Edit{% else %}Create{% endif %} Ticket</h2>
+<form method="post">
+    {% csrf_token %}
+    {{form|crispy}}
+    <button type="submit" class="btn btn-success">{% if ticket %}Update{% else %}Create{% endif %} Ticket</button>
+</form>
+{% endblock %}

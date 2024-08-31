@@ -1,0 +1,172 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<h2>All Tickets</h2>
+
+<!-- Button to Open Create Ticket Modal -->
+<button type="button" class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#createTicketModal">
+    Create Ticket
+</button>
+
+<!-- Tickets Table -->
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Status</th>
+            <th>Category</th>
+            <th>Created By</th>
+            <th>Created At</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for ticket in tickets %}
+        <tr>
+            <td>{{ ticket.title }}</td>
+            <td>{{ ticket.get_status_display }}</td>
+            <td>{% if ticket.category %}
+                    {{ ticket.category.name }}
+                {% else %}
+                    N/A
+                {% endif %}
+        </td>
+            <td>{{ ticket.created_by.username }}</td>
+            <td>{{ ticket.created_at|date:"Y-m-d H:i" }}</td>
+            <td>
+                <button type="button" class="btn btn-sm btn-warning" data-bs-toggle="modal" 
+                        data-bs-target="#updateTicketModal{{ ticket.pk }}">
+                    Edit
+                </button>
+                <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" 
+                        data-bs-target="#deleteTicketModal{{ ticket.pk }}">
+                    Delete
+                </button>
+            </td>
+        </tr>
+
+        <!-- Update Ticket Modal -->
+        <div class="modal fade" id="updateTicketModal{{ ticket.pk }}" tabindex="-1" aria-labelledby="updateTicketModalLabel{{ ticket.pk }}" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form method="post" action="{% url 'ticket-update' ticket.pk %}">
+                        {% csrf_token %}
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="updateTicketModalLabel{{ ticket.pk }}">Edit Ticket</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            {% csrf_token %}
+                            {{ form|crispy }}
+                            <!-- Alternatively, manually render fields -->
+                            <div class="mb-3">
+                                <label for="id_title_{{ ticket.pk }}" class="form-label">Title</label>
+                                <input type="text" class="form-control" id="id_title_{{ ticket.pk }}" name="title" value="{{ ticket.title }}" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="id_description_{{ ticket.pk }}" class="form-label">Description</label>
+                                <textarea class="form-control" id="id_description_{{ ticket.pk }}" name="description" rows="3" required>{{ ticket.description }}</textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="id_status_{{ ticket.pk }}" class="form-label">Status</label>
+                                <select class="form-select" id="id_status_{{ ticket.pk }}" name="status">
+                                    <option value="open" {% if ticket.status == 'open' %}selected{% endif %}>Open</option>
+                                    <option value="in_progress" {% if ticket.status == 'in_progress' %}selected{% endif %}>In Progress</option>
+                                    <option value="closed" {% if ticket.status == 'closed' %}selected{% endif %}>Closed</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="id_category_{{ ticket.pk }}" class="form-label">Category</label>
+                                <select class="form-select" id="id_category_{{ ticket.pk }}" name="category">
+                                    <option value="">Select Category</option>
+                                    {% for category in categories %}
+                                        <option value="{{ category.pk }}" {% if ticket.category == category %}selected{% endif %}>{{ category.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-warning">Update Ticket</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Delete Ticket Modal -->
+        <div class="modal fade" id="deleteTicketModal{{ ticket.pk }}" tabindex="-1" aria-labelledby="deleteTicketModalLabel{{ ticket.pk }}" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form method="post" action="{% url 'ticket-delete' ticket.pk %}">
+                        {% csrf_token %}
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="deleteTicketModalLabel{{ ticket.pk }}">Delete Ticket</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            Are you sure you want to delete the ticket "{{ ticket.title }}"?
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- Create Ticket Modal -->
+<div class="modal fade" id="createTicketModal" tabindex="-1" aria-labelledby="createTicketModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" action="{% url 'ticket-create' %}">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createTicketModalLabel">Create Ticket</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    {{ form|crispy}}
+                    <!-- Alternatively, manually render fields -->
+                    <div class="mb-3">
+                        <label for="id_title" class="form-label">Title</label>
+                        <input type="text" class="form-control" id="id_title" name="title" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="id_description" class="form-label">Description</label>
+                        <textarea class="form-control" id="id_description" name="description" rows="3" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="id_status" class="form-label">Status</label>
+                        <select class="form-select" id="id_status" name="status">
+                            <option value="open">Open</option>
+                            <option value="in_progress">In Progress</option>
+                            <option value="closed">Closed</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="id_category" class="form-label">Category</label>
+                        <select class="form-select" id="id_category" name="category">
+                            <option value="">Select Category</option>
+                            {% for category in categories %}
+                                <option value="{{ category.pk }}">{{ category.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Ticket</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
